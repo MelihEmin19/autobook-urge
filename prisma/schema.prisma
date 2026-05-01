@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model Service {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.NVarChar(120)
+  description String    @db.NVarChar(1000)
+  price       Decimal   @db.Decimal(10, 2)
+  durationMin Int
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  bookings    Booking[]
+}
+
+model Booking {
+  id           Int      @id @default(autoincrement())
+  code         String   @unique @db.NVarChar(12)
+  customerName String   @db.NVarChar(120)
+  phone        String   @db.NVarChar(30)
+  email        String   @db.NVarChar(160)
+  plate        String   @db.NVarChar(20)
+  serviceId    Int
+  service      Service  @relation(fields: [serviceId], references: [id])
+  slotStart    DateTime
+  slotEnd      DateTime
+  status       String   @db.NVarChar(20) @default("PENDING")
+  note         String?  @db.NVarChar(500)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model AdminUser {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique @db.NVarChar(160)
+  passwordHash String   @db.NVarChar(200)
+  name         String   @db.NVarChar(120)
+  createdAt    DateTime @default(now())
+}
+
+model Setting {
+  id          Int    @id @default(autoincrement())
+  garageName  String @db.NVarChar(120)
+  phone       String @db.NVarChar(30)
+  address     String @db.NVarChar(300)
+  slotMinutes Int    @default(30)
+}
+
+model BusinessHour {
+  id        Int      @id @default(autoincrement())
+  dayOfWeek Int      @unique
+  openTime  String   @db.NVarChar(5)
+  closeTime String   @db.NVarChar(5)
+  isClosed  Boolean  @default(false)
+}
+
+model ClosedDay {
+  id     Int      @id @default(autoincrement())
+  date   DateTime @unique @db.Date
+  reason String?  @db.NVarChar(200)
+}
